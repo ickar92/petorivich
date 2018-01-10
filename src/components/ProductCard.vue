@@ -1,5 +1,5 @@
 <template>
-  <div class="product-card" v-if="product && product.isActive">
+  <div class="product-card" v-if="product">
     <main class="grid container">
       <div class="sub_category_page">
         <div class="column_right column_right_products_container">
@@ -9,8 +9,8 @@
             <div id="products_section">
               <div class="products_page pg_0">
                 <div class="product product_horizontal">                                
-                  <span class="product_code">Код: {{product.code}}</span>
-                  <div class="product_status_tooltip_container">
+                  <span class="product_code">Код: {{ product.code }}</span>
+                  <div v-if="product.isActive" class="product_status_tooltip_container">
                       <span class="product_status">Наличие</span>
                   </div>                                
                   <div class="product_photo">
@@ -25,54 +25,61 @@
                       <p>Могут понадобиться:</p>
                       <a :key="idx" v-for="(tag, idx) in productTags" href="#" class="url--link">{{tag}}</a>
                   </div>
+
                   <div class="product_units">
-                      <div class="unit--wrapper">
-                          <div class="unit--select unit--active">
-                              <p class="ng-binding">За м. кв.</p>
+                      <div class="unit--wrapper" @click.stop="togglePriceType()">
+                          <div class="unit--select" :class="{ 'unit--active': defaultPriceType }">
+                              <p class="ng-binding">За {{ product.unit }}</p>
                           </div>
-                          <div class="unit--select">
-                              <p class="ng-binding">За упаковку</p>
+                          <div class="unit--select" :class="{ 'unit--active': altPriceType }">
+                              <p class="ng-binding">За {{ product.unitAlt }}</p>
                           </div>
                       </div>
                   </div>
+
                   <p class="product_price_club_card">
-                      <span class="product_price_club_card_text">По карте<br>клуба</span>
-                      <span class="goldPrice">{{product.priceGold}}</span>
-                      <span class="rouble__i black__i">
-                          <svg version="1.0" id="rouble__b" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="30px" height="22px" viewBox="0 0 50 50" enable-background="new 0 0 50 50" xml:space="preserve">
-                              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rouble_black"></use>
-                          </svg>
-                        </span>
+                    <span class="product_price_club_card_text">По карте<br>клуба</span>
+                    <span class="goldPrice">{{ defaultPriceType ? product.priceGold : product.priceGoldAlt }}</span>
+                    <span class="rouble__i black__i">
+                      <svg version="1.0" id="rouble__b" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="30px" height="22px" viewBox="0 0 50 50" enable-background="new 0 0 50 50" xml:space="preserve">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rouble_black"></use>
+                      </svg>
+                    </span>
                   </p>
+
                   <p class="product_price_default">
-                      <span class="retailPrice">{{product.priceRetail}}</span>
-                      <span class="rouble__i black__i">
-                          <svg version="1.0" id="rouble__g" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="30px" height="22px" viewBox="0 0 50 50" enable-background="new 0 0 50 50" xml:space="preserve">
-                              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rouble_gray"></use>
-                          </svg>
-                        </span>
+                    <span class="retailPrice">{{ defaultPriceType ? product.priceRetail : product.priceRetailAlt }}</span>
+                    <span class="rouble__i black__i">
+                      <svg version="1.0" id="rouble__g" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="30px" height="22px" viewBox="0 0 50 50" enable-background="new 0 0 50 50" xml:space="preserve">
+                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#rouble_gray"></use>
+                      </svg>
+                    </span>
                   </p>
-                  <div style="display: none;" class="product_price_points">
-                      <p class="ng-binding">Можно купить за 231,75 балла</p>
+
+                  <div v-if="false" class="product_price_points">
+                    <p class="ng-binding">Можно купить за 231,75 балла</p>
                   </div>
+
                   <div class="list--unit-padd"></div>
-                  <div class="list--unit-desc">
-                      <div class="unit--info">
-                          <div class="unit--desc-i"></div>
-                          <div class="unit--desc-t">
-                              <p>
-                                  <span class="ng-binding">Продается упаковками:</span>
-                                  <span class="unit--infoInn">1 упак. = 2.47 м. кв. </span>
-                              </p>
-                          </div>
+
+                  <div v-if="false" class="list--unit-desc">
+                    <div class="unit--info">
+                      <div class="unit--desc-i"></div>
+                      <div class="unit--desc-t">
+                        <p>
+                          <span class="ng-binding">Продается упаковками:</span>
+                          <span class="unit--infoInn">1 упак. = 2.47 м. кв. </span>
+                        </p>
                       </div>
+                    </div>
                   </div>
+
                   <div class="product__wrapper">
                       <div class="product_count_wrapper">
                           <div class="stepper">
-                              <input class="product__count stepper-input" type="text" value="1">
-                              <span class="stepper-arrow up"></span>
-                              <span class="stepper-arrow down"></span>                                            
+                              <input class="product__count stepper-input" type="text" :value="counter">
+                              <span class="stepper-arrow up" @click="onCounterChange({ type: 'inc' })"></span>
+                              <span class="stepper-arrow down" @click="onCounterChange({ type: 'dec' })"></span>                                            
                           </div>
                       </div>
                       <span class="btn btn_cart" data-url="/cart/" :data-product-id="product.productId">
@@ -113,18 +120,52 @@
 <script>
 export default {
   props: ['product', 'photoModifier'],
+  data () {
+    return {
+      counter: 1,
+      defaultPriceType: true,
+    }
+  },
 
   computed: {
     productTags() {
       return this.product.assocProducts.split(/\r?\n/)
     },
+
     productPhoto() {
       const photoUrl = this.product.primaryImageUrl
       const lastPointIndex = photoUrl.lastIndexOf('.')
-      return [
+      const photoUrlWithModifier = [
         photoUrl.slice(0, lastPointIndex),
         this.photoModifier,
-        photoUrl.slice(lastPointIndex)].join('')
+        photoUrl.slice(lastPointIndex)
+      ].join('')
+      return photoUrlWithModifier
+    },
+    
+    canDecrementCounter() {
+      return this.counter > 1
+    },
+
+    altPriceType() {
+      return !this.defaultPriceType
+    }
+  },
+
+  methods: {
+    onCounterChange({ type }) {
+      if (type === 'inc') {
+        this.counter++
+        return
+      }
+      if (!this.canDecrementCounter) {
+        return
+      }
+      this.counter--
+    },
+
+    togglePriceType() {
+      this.defaultPriceType = !this.defaultPriceType
     }
   }
 }
